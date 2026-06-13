@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: moallem-bot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: TELEGRAM_BOT_TOKEN
+        value: 8724867533:AAE4mVFqmv8CA_FhVaxkdgUvnx4_Nuhk1uI
+      - key: ADMIN_ID
+        value: 7890430043
+      - key: GEMINI_API_KEY
+        value: ""
+      - key: OPENROUTER_API_KEY
+        value: 
+      - key: GROQ_API_KEY
+        value: 
+      - key: TOGETHER_API_KEY
+        value: 
+      - key: HUGGINGFACE_API_KEY
+        value: 
+      - key: STORAGE_CHANNEL_ID
+        value: 
+      - key: STORAGE_CHANNEL_LINK
+        value: https://t.me/+W9mV37pao3cyZmNk
+      - key: WEBHOOK_URL
+        value: 
+      - key: PORT
+        value: 8080
