@@ -6,7 +6,6 @@ import aiohttp
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
-from flask import Flask, request
 
 from config import (
     TELEGRAM_BOT_TOKEN, PROJECT_NAME, VERSION, UNIVERSITY,
@@ -583,7 +582,7 @@ async def handle_callback(update, context):
         else:
             await query.edit_message_text("🔧 *قيد التطوير.*", parse_mode="Markdown")
 
-def main():
+async def main():
     logger.info("Starting " + PROJECT_NAME + " Pro v" + VERSION)
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
@@ -614,14 +613,14 @@ def main():
     application.add_handler(MessageHandler(filters.VIDEO, handle_video))
     application.add_handler(CallbackQueryHandler(handle_callback))
     
-    logger.info("All handlers added.")
+    logger.info("All handlers added. Starting polling...")
     
-    if WEBHOOK_URL:
-        logger.info("Using webhook: " + WEBHOOK_URL)
-        application.run_polling()
-    else:
-        logger.info("Using polling mode")
-        application.run_polling()
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling()
+    
+    logger.info("✅ Bot is running!")
+    await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
