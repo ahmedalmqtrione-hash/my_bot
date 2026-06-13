@@ -6,6 +6,8 @@ import aiohttp
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
+from flask import Flask, request
+
 from config import (
     TELEGRAM_BOT_TOKEN, PROJECT_NAME, VERSION, UNIVERSITY,
     DEVELOPER_NAME, DEVELOPER_PHONE, DEPARTMENTS, ADMIN_ID, ADMIN_PASSWORD,
@@ -581,9 +583,10 @@ async def handle_callback(update, context):
         else:
             await query.edit_message_text("🔧 *قيد التطوير.*", parse_mode="Markdown")
 
-async def main():
+def main():
     logger.info("Starting " + PROJECT_NAME + " Pro v" + VERSION)
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("my_stats", my_stats_command))
@@ -610,26 +613,15 @@ async def main():
     application.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     application.add_handler(MessageHandler(filters.VIDEO, handle_video))
     application.add_handler(CallbackQueryHandler(handle_callback))
+    
     logger.info("All handlers added.")
+    
     if WEBHOOK_URL:
         logger.info("Using webhook: " + WEBHOOK_URL)
-        await application.initialize()
-        await application.start()
-        await application.bot.set_webhook(WEBHOOK_URL + "/" + TELEGRAM_BOT_TOKEN)
-        from flask import Flask, request
-        flask_app = Flask(__name__)
-        @flask_app.route("/" + TELEGRAM_BOT_TOKEN, methods=["POST"])
-        def webhook():
-            update = Update.de_json(request.get_json(force=True), application.bot)
-            application.update_queue.put_nowait(update)
-            return "OK"
-        @flask_app.route("/")
-        def health():
-            return "🤖 " + PROJECT_NAME + " v" + VERSION + " is running!"
-        flask_app.run(host="0.0.0.0", port=PORT)
+        application.run_polling()
     else:
         logger.info("Using polling mode")
-        await application.run_polling()
+        application.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
